@@ -1,12 +1,16 @@
 {
   "name": "tetris-rush",
   "private": true,
+  "homepage": "https://lorenago.github.io/tetris-rush/",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev-host": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "vite build",
+    "deploy": "gh-pages -d dist"
   },
   "devDependencies": {
     "standard": "^17.1.0",
@@ -16,5 +20,8 @@
     "extends": [
       "standard"
     ]
+  },
+  "dependencies": {
+    "gh-pages": "^6.1.1"
   }
 }
