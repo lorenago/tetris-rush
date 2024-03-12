@@ -1,4 +1,8 @@
-import './style.css'
+import './style.scss'
+
+// Importación parcial para evitar cargar el bundle completo
+import Modal from 'bootstrap/js/dist/modal';
+
 import { BLOCK_SIZE, BOARD_WIDTH, BOARD_HEIGHT, EVENT_MOVEMENTS, PIECES } from './const'
 
 // 14. Tetris theme
@@ -10,8 +14,19 @@ const canvas = document.querySelector('canvas')
 const context = canvas.getContext('2d')
 const $score = document.querySelector('#puntuation')
 const $section = document.querySelector('section')
+const $gameOverModal = document.getElementById('gameOverModal')
 
+// Player score
 let score = 0
+// Play speed
+let playSpeed = 1000
+// Request animation frame Id
+let requestAnimationFrameId;
+// Game Over glag
+let gameIsOver = true;
+// Time when game was started
+let lastTimeUpdate;
+let timeGameStart;
 
 canvas.width = BLOCK_SIZE * BOARD_WIDTH
 canvas.height = BLOCK_SIZE * BOARD_HEIGHT
@@ -37,21 +52,30 @@ let piece
 
 // 2. Game loop
 let dropCounter = 0
-let lastTime = 0
 // 10. Movimiento automático || autodrop
 // TODO: Disminuir tiempo a medida que aumenta la puntuación || tiempo de partida.
-function update(time = 0) {
-  const deltaTime = time - lastTime
-  lastTime = time
+function update() {
+  const time = Date.now();
+  if (gameIsOver) { return; }
+  const deltaTime = Math.max(time - lastTimeUpdate, 0)
+  const playTime = time - timeGameStart;
+  lastTimeUpdate = time
+
+  // 16. Aumentar la velocidad del autodrop en función del tiempo jugado
+  // const playbackRate = 1 + (Math.floor(time / 50000) * 0.05)
+  const playbackRate = 1 + (Math.floor(playTime / (audio.duration / 4 * 1000)) * 0.01)
+  if (audio.playbackRate !== playbackRate) { audio.playbackRate = playbackRate }
+  playSpeed = Math.max(1000 - (Math.floor(playTime / 1000) * 2), 100)
 
   dropCounter += deltaTime
 
-  if (dropCounter > 1000) {
+  if (dropCounter > playSpeed) {
     movePiece('ArrowDown')
     dropCounter = 0
   }
   draw()
-  window.requestAnimationFrame(update)
+  window.cancelAnimationFrame(requestAnimationFrameId)
+  requestAnimationFrameId = window.requestAnimationFrame(update)
 }
 
 // 4. Dibujamos la situación inicial.
@@ -87,11 +111,6 @@ function paintPieces(obj) {
   })
 }
 
-// 6. Detección de movimientos
-document.addEventListener('keydown', event => {
-  movePiece(event.key)
-})
-
 function movePiece(movement) {
   let rotatedPiece = []
   let previousShape = null
@@ -118,10 +137,19 @@ function movePiece(movement) {
         removeRows()
       }
       break
-    
+    case EVENT_MOVEMENTS.UP:
+      piece.position.y++
+      if (!checkCollision()) {
+        movePiece(movement)
+      } else {
+        piece.position.y--
+        solidifyPiece(piece)
+        removeRows()
+      }
+      break
+      
     // 13. Rotación de piezas
     // Rotación (horaria)
-    case EVENT_MOVEMENTS.UP:
     case EVENT_MOVEMENTS.ROTATE:
       for(let i = 0; i < piece.shape[0].length; i++) {
         const row = []
@@ -139,7 +167,7 @@ function movePiece(movement) {
       }
       break
     // Rotación inversa (antihoraria)
-    // Revisar qué pasa con la posición
+    // Revisar bug con la posición
     // case EVENT_MOVEMENTS.REVERSE_ROTATE:
     //   rotatedPiece = []
 
@@ -190,15 +218,17 @@ function solidifyPiece() {
   if (checkCollision()) {
     gameOver()
   }
-
 }
 
 // 12. Game Over
 function gameOver() {
-  // Cambiar alert por pop up y en aceptar, volver a reproducir la música
-  window.alert('Game Over!!! Sorry!')
-  board.shape.forEach((row) => row.fill(0))
-  getRandomPiece()
+  gameIsOver = true;
+  window.cancelAnimationFrame(requestAnimationFrameId)
+  requestAnimationFrameId = undefined;
+  audio.pause();
+
+  const myModal = new Modal(document.getElementById('gameOverModal'))
+  myModal.show($gameOverModal)
 }
 
 // 11. Elección de pieza aleatoria
@@ -228,14 +258,34 @@ function removeRows() {
   score += scoreToApply
 }
 
-// 15. User init play game interaction
-$section?.addEventListener('click', () => {
+// Inicia el juego reseteando los valores por defecto
+function initGame() {
+  score = 0
+  gameIsOver = false
   getRandomPiece()
-  update()
+  
+  audio.playbackRate = 1;
+  audio.currentTime = 0;
+  audio.loop = true;
+  audio.play();
 
-  audio.play()
-  $section.remove()
+  lastTimeUpdate = timeGameStart = Date.now();
+  update()
+}
+
+// 6. Detección de movimientos
+document.addEventListener('keydown', event => {
+  movePiece(event.key)
 })
 
+$gameOverModal.addEventListener('hidden.bs.modal', event => {
+  // Reset board game
+  board.shape.forEach((row) => row.fill(0))
+  initGame()
+})
 
-
+// 15. User init play game interaction
+$section?.addEventListener('click', () => {
+  initGame()
+  $section.remove()
+})

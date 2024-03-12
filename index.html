@@ -9,12 +9,25 @@
   <body>
     <div id="app" basename="/tetris-rush">
       <section>
-        <span>Click to</span>
-        <span>Start game</span>
+        <span>TETRIS RUSH!</span>
+        <button class="btn btn-primary"> Start game </button>
       </section>
       <canvas style="border:5px solid white;"></canvas>
     </div>
     <strong>Puntuación: <span id="puntuation"></span></strong>
+    
+    <!-- Game Over Modal -->
+    <div class="modal fade" id="gameOverModal" role="dialog">
+      <!--  Vertically centered modal -->
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-body">
+            ¡TETRIS RUSH!
+          </div>
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">¡A jugar!</button>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
