@@ -6,10 +6,14 @@ export const EVENT_MOVEMENTS = {
     LEFT: 'ArrowLeft',
     RIGHT: 'ArrowRight',
     DOWN: 'ArrowDown',
-    // UP: ' ',
     UP: 'ArrowUp',
-    ROTATE: 'z',
-    REVERSE_ROTATE: 'x'
+    ROTATE: ' ',
+    // ROTATE: 'z',
+    REVERSE_ROTATE: 'x',
+    PUSH: 'ArrowUp',
+    PAUSE: 'Escape',
+    ENTER: 'Enter',
+    CONTROL: 'Control'
 }
 
 export const PIECES = [
