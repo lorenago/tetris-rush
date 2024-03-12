@@ -5,17 +5,30 @@
     <link rel="icon" type="image/svg+xml" href="/tetris-rush/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tetris Rush</title>
-    <script type="module" crossorigin src="/tetris-rush/assets/index-lEIIDgCB.js"></script>
-    <link rel="stylesheet" crossorigin href="/tetris-rush/assets/index-iwfVXoNk.css">
+    <script type="module" crossorigin src="/tetris-rush/assets/index-CRBb5WOK.js"></script>
+    <link rel="stylesheet" crossorigin href="/tetris-rush/assets/index-BBnRZQli.css">
   </head>
   <body>
     <div id="app" basename="/tetris-rush">
       <section>
-        <span>Click to</span>
-        <span>Start game</span>
+        <span>TETRIS RUSH!</span>
+        <button class="btn btn-primary"> Start game </button>
       </section>
       <canvas style="border:5px solid white;"></canvas>
     </div>
     <strong>Puntuación: <span id="puntuation"></span></strong>
+    
+    <!-- Game Over Modal -->
+    <div class="modal fade" id="gameOverModal" role="dialog">
+      <!--  Vertically centered modal -->
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-body">
+            ¡TETRIS RUSH!
+          </div>
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">¡A jugar!</button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
