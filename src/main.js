@@ -1,7 +1,7 @@
 import './style.scss'
 
 // Importación parcial para evitar cargar el bundle completo
-import Modal from 'bootstrap/js/dist/modal';
+import { Modal } from 'bootstrap'
 
 // Constantes
 import { BLOCK_SIZE, BOARD_WIDTH, BOARD_HEIGHT, EVENT_MOVEMENTS, PIECES, PIECE_IMAGE } from './const'
