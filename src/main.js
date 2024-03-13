@@ -1,7 +1,7 @@
 import './style.scss'
 
 // Importación parcial para evitar cargar el bundle completo
-import { Modal } from 'bootstrap'
+import Modal from 'bootstrap/js/dist/modal'
 
 // Constantes
 import { BLOCK_SIZE, BOARD_WIDTH, BOARD_HEIGHT, EVENT_MOVEMENTS, PIECES, PIECE_IMAGE } from './const'
@@ -113,7 +113,12 @@ function paintPieces(obj) {
         let imgTag = new Image();
         imgTag.crossOrigin = "anonymous";
         imgTag.src = pixel.image || obj.image || PIECE_IMAGE;
-
+        // imgTag.onload = () => {
+        //   context.fillStyle = pixel.color;
+        //   context.fillRect(0, 0, canvas.width, canvas.height);
+        //   context.globalCompositeOperation = "destination-in";
+        //   context.drawImage(imgTag, x + obj.position.x, y + obj.position.y, 1, 1);
+        // };
         context.drawImage(imgTag, x + obj.position.x, y + obj.position.y, 1, 1);
       }
     })
@@ -185,6 +190,29 @@ function movePiece(movement) {
     //     }
     //     rotatedPiece.push(row)
     //   }
+
+    
+      // let rotate=function(matrix,dir){
+      //   for(let y=0;y<matrix.length;++y){
+      //     for(let x=0;x<y;++x){
+      //       [
+      //         matrix[x][y],
+      //         matrix[y][x]
+      //       ]=[
+      //         matrix[y][x],
+      //         matrix[x][y],
+      //       ]
+      //     }
+      //   }
+      //   if(dir>0){
+      //     matrix.forEach(row=>row.reverse());
+      //   }
+      //   else{
+      //     matrix.reverse();
+      //   }
+      // };
+
+    
 
     //   previousShape = piece.shape
     //   piece.shape = rotatedPiece
