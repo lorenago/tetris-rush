@@ -8,16 +8,19 @@ Juego de Tetris basado en el desarrollado por Midudev
 - Aumento de la velocidad de la música y del autodrop para incrementar la dificultad del juego
 - Integración de Bootstrap
 - Integración de gh-pages
+- Pintar cuadrados
+    - Rellenar con una imagen propia
 
 ## TODO:
     - Mejoras Técnicas
         - Giro inverso, por que falla la posición?
         - Revisar la puntuación
         - Pop up de nueva partida
+        - Giro con colisión, mover lateralmente para que entre girada.
+        - Utilizar única imagen y colorear en función de la pieza colocada.
+        - Pintar matriz de fondo.
 
     - Nuevas funcionalidades
-        - Pintar cuadrados
-            - Rellenar con una imagen propia
         - Mostrar la siguiente pieza
         - Guardar puntuaciones en navegador
         - Pantalla Game Over
