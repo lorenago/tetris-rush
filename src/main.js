@@ -3,7 +3,8 @@ import './style.scss'
 // Importación parcial para evitar cargar el bundle completo
 import Modal from 'bootstrap/js/dist/modal';
 
-import { BLOCK_SIZE, BOARD_WIDTH, BOARD_HEIGHT, EVENT_MOVEMENTS, PIECES } from './const'
+// Constantes
+import { BLOCK_SIZE, BOARD_WIDTH, BOARD_HEIGHT, EVENT_MOVEMENTS, PIECES, PIECE_IMAGE } from './const'
 
 // 14. Tetris theme
 const audio = new Audio('tetris.mp3')
@@ -24,9 +25,16 @@ let playSpeed = 1000
 let requestAnimationFrameId;
 // Game Over glag
 let gameIsOver = true;
-// Time when game was started
+// Time when game last update
 let lastTimeUpdate;
+// Time when game was started
 let timeGameStart;
+// Game pieces
+let gamePieces;
+// Drop count
+let dropCounter = 0
+// 4. Pieza del jugador
+let piece
 
 canvas.width = BLOCK_SIZE * BOARD_WIDTH
 canvas.height = BLOCK_SIZE * BOARD_HEIGHT
@@ -34,26 +42,34 @@ canvas.height = BLOCK_SIZE * BOARD_HEIGHT
 context.scale(BLOCK_SIZE, BLOCK_SIZE)
 
 // 3. Board
-// const board = createBoard(width)
 const board = {
   shape: createBoard(BOARD_WIDTH, BOARD_HEIGHT),
   position: {
     x: 0, y: 0
   },
-  color: 'yellow'
-}
-function createBoard(width, height) {
-  return Array(height).fill().map(() => Array(width).fill(0))
-  // return Array(height).fill().map(() => Array(width).fill({ value: 0, color: '' }))
+  color: 'gray'
 }
 
-// 4. Pieza del jugador
-let piece
+function createBoard(width, height) {
+  return Array(height).fill().map(() => Array(width).fill({ value: 0 }))
+}
+
+const GAME_PIECES = PIECES.map(piece => {
+  return {
+    ...piece,
+    shape: piece.shape.map(row => {
+      return row.map(pixel => ({
+        value: pixel,
+        color: piece.color,
+        rgb: piece.rgb,
+        image: piece.image
+      }))
+    })
+  }
+})
 
 // 2. Game loop
-let dropCounter = 0
 // 10. Movimiento automático || autodrop
-// TODO: Disminuir tiempo a medida que aumenta la puntuación || tiempo de partida.
 function update() {
   const time = Date.now();
   if (gameIsOver) { return; }
@@ -62,7 +78,6 @@ function update() {
   lastTimeUpdate = time
 
   // 16. Aumentar la velocidad del autodrop en función del tiempo jugado
-  // const playbackRate = 1 + (Math.floor(time / 50000) * 0.05)
   const playbackRate = 1 + (Math.floor(playTime / (audio.duration / 4 * 1000)) * 0.01)
   if (audio.playbackRate !== playbackRate) { audio.playbackRate = playbackRate }
   playSpeed = Math.max(1000 - (Math.floor(playTime / 1000) * 2), 100)
@@ -81,7 +96,7 @@ function update() {
 // 4. Dibujamos la situación inicial.
 function draw() {
   context.fillStyle = '#000'
-  context?.fillRect(0, 0, canvas.width, canvas.height)
+  context.fillRect(0, 0, canvas.width, canvas.height)
 
   paintPieces(board)
   paintPieces(piece)
@@ -92,20 +107,14 @@ function draw() {
 // 5. Colorear piezas o tablero
 function paintPieces(obj) {
   obj.shape.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value === 1) {
-        context.fillStyle = obj.color
-        context.fillRect(x + obj.position.x, y + obj.position.y, 1, 1)
-        // DISPLAY rectangles.
-        // TODO: Pintar los cuadrados con bordes?
-        // context.fillStyle = "hotpink";
-        // context.fillRect(xPos, yPos, width, height);
-        // context.lineWidth = 4;
-        // context.strokeStyle = "royalblue";
-        // context.strokeRect(x + 130, y, 1, 1);
-        // context.fillStyle = "darkorange";
-        // context.fillRect(x + 260, y, 1, 1);
-        // context.clearRect(x + 285, y + 10, 1 - 50, 1 - 20);
+    row.forEach((pixel, x) => {
+      if (pixel.value === 1) {
+        // Display custom images.
+        let imgTag = new Image();
+        imgTag.crossOrigin = "anonymous";
+        imgTag.src = pixel.image || obj.image || PIECE_IMAGE;
+
+        context.drawImage(imgTag, x + obj.position.x, y + obj.position.y, 1, 1);
       }
     })
   })
@@ -114,8 +123,6 @@ function paintPieces(obj) {
 function movePiece(movement) {
   let rotatedPiece = []
   let previousShape = null
-  // Revisar si queremos dejar tiempo al usuario o no XD.
-  // dropCounter = 0
   switch (movement) {
     case EVENT_MOVEMENTS.LEFT:
       piece.position.x--
@@ -193,10 +200,9 @@ function movePiece(movement) {
 // 7. Comprobación de colisiones
 function checkCollision() {
   return piece.shape.find((row, y) => {
-    return row.find((value, x) => {
-      return ( value !== 0
-        && board.shape[y + piece.position.y]?.[x + piece.position.x] !== 0 )
-
+    return row.find((pixel, x) => {
+      return ( pixel.value !== 0
+        && board.shape[y + piece.position.y]?.[x + piece.position.x]?.value !== 0 )
     })
   })
 }
@@ -204,9 +210,9 @@ function checkCollision() {
 // 8. Solidificación de las piezas.
 function solidifyPiece() {
   piece.shape.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value === 1) {
-        board.shape[y + piece.position.y][x + piece.position.x] = 1
+    row.forEach((pixel, x) => {
+      if (pixel.value === 1) {
+        board.shape[y + piece.position.y][x + piece.position.x] = pixel
       }
     })
   })
@@ -215,7 +221,7 @@ function solidifyPiece() {
   // Reset piece
   getRandomPiece()
 
-  if (checkCollision()) {
+  if (checkCollision() && !gameIsOver) {
     gameOver()
   }
 }
@@ -234,7 +240,7 @@ function gameOver() {
 // 11. Elección de pieza aleatoria
 function getRandomPiece() {
   piece = JSON.parse(JSON.stringify({
-    ...PIECES[Math.floor(Math.random() * PIECES.length)]
+    ...GAME_PIECES[Math.floor(Math.random() * GAME_PIECES.length)]
   }))
 }
 
@@ -243,7 +249,7 @@ function removeRows() {
   const rowsToRemove = []
   let scoreToApply = 0
   board.shape.forEach((row, y) => {
-    if (row.every(value => value === 1)) {
+    if (row.every(pixel => pixel.value === 1)) {
       rowsToRemove.push(y)
       scoreToApply += 20
     }
@@ -252,7 +258,7 @@ function removeRows() {
   scoreToApply += multipleLineBonus * 25
   rowsToRemove.forEach(y => {
     board.shape.splice(y, 1)
-    const newRow = Array(BOARD_WIDTH).fill(0)
+    const newRow = Array(BOARD_WIDTH).fill({ value: 0 })
     board.shape.unshift(newRow)
   })
   score += scoreToApply
@@ -280,8 +286,11 @@ document.addEventListener('keydown', event => {
 
 $gameOverModal.addEventListener('hidden.bs.modal', event => {
   // Reset board game
-  board.shape.forEach((row) => row.fill(0))
+  board.shape.forEach((row) => row.fill({ value: 0 }))
   initGame()
+  const myModal = new Modal(document.getElementById('gameOverModal'))
+  myModal.hide($gameOverModal)
+
 })
 
 // 15. User init play game interaction
