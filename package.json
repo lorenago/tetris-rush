@@ -1,9 +1,18 @@
 {
   "name": "tetris-rush",
+  "type": "module",
+  "files": ["dist"],
+  "main": "./dist/bootstrap.umd.cjs",
+  "module": "./dist/bootstrap.js",
+  "exports": {
+    ".": {
+      "import": "./dist/bootstrap.js",
+      "require": "./dist/bootstrap.umd.cjs"
+    }
+  },
   "private": true,
   "homepage": "https://lorenago.github.io/tetris-rush/",
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "dev-host": "vite --host",
