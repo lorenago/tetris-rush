@@ -1,7 +1,9 @@
 {
   "name": "tetris-rush",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/bootstrap.umd.cjs",
   "module": "./dist/bootstrap.js",
   "exports": {
